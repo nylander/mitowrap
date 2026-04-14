@@ -1,8 +1,8 @@
-reference: "/data/Cicadas/pipeline/many_mitogenomes_linear.fasta"
+reference: "/home/nylander/run/Johannes_Bergsten/johaberg-ryggsimmare/data/references/Notonectidae_full_mito.fasta"
 suffix: "_R1_001.fastq.gz"
 keep_reads: False
-reads_dir: "/home/cfos/Programs/mitowrap/reads"
-outdir: "/home/cfos/Programs/mitowrap/results"
+reads_dir: "/home/nylander/run/Johannes_Bergsten/johaberg-ryggsimmare/data/wgs"
+outdir: "/home/nylander/run/Johannes_Bergsten/johaberg-ryggsimmare/analyses/mitowrap/results"
 using_conda: True
 using_singularity: False
 clade: "Arthropoda" # One of {Chordata,Arthropoda,Echinodermata,Annelida-segmented-worms,Bryozoa,Mollusca,Nematoda,Nemertea-ribbon-worms,Porifera-sponges} - see MitoZ documentation for explanation
