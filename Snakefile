@@ -3,7 +3,7 @@
 """
 Created on Wed Jul 21 15:43:06 2021
 
-Last modified: 2026-04-14 15:43:03
+Last modified: 2026-04-14 17:03:23
 Sign: JN
 
 @author: cfos
@@ -38,8 +38,8 @@ def find_input_data(READSDIR, data_type, SUFFIX):
     result = []
     for read in reads:
         if SUFFIX == '_L001_R1_001.fastq.gz':
-            sample = re.sub("_S\d+_L001.*", repl="", string=os.path.basename(read))
-            barcode = re.search("S\d+_L001.*", string=os.path.basename(read)).group()
+            sample = re.sub(r"_S\d+_L001.*", repl="", string=os.path.basename(read))
+            barcode = re.search(r"S\d+_L001.*", string=os.path.basename(read)).group()
             barcode = re.sub("_.*", repl="", string=barcode)
             res = {'sample':sample,'barcode':barcode, 'fq1':read, 'fq2':read.replace("_R1", "_R2")}
         else:
@@ -74,7 +74,7 @@ onstart:
 \033[95m
            _ _
  _ __ ___ (_) |_ _____      ___ __ __ _ _ __
-| '_ ` _ \| | __/ _ \ \ /\ / / '__/ _` | '_ \
+| '_ ` _ \| | __/ _ \ \ /\ / / '__/ _` | '_ \\
 | | | | | | | || (_) \ V  V /| | | (_| | |_) |
 |_| |_| |_|_|\__\___/ \_/\_/ |_|  \__,_| .__/
                                        |_|
