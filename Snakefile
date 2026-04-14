@@ -296,11 +296,9 @@ rule get_organelle_assembly:
         r2 = os.path.join(RESULT_DIR, "{sample}/{sample}_mito_R2.fq.gz")
     output:
         ckp = os.path.join(RESULT_DIR, "{sample}/assembly/{sample}.getOrgComplete.txt"),
-        complete_file = os.path.join(RESULT_DIR, "{sample}/assembly/get_org.log.txt")
-    params: 
+    params:
         sample = "{sample}",
         outdir = os.path.join(RESULT_DIR, "{sample}/assembly")
-    params: 
     message:"assembling {wildcards.sample} using getOrganelle"
     threads: 8
     log:
