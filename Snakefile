@@ -3,7 +3,7 @@
 """
 Created on Wed Jul 21 15:43:06 2021
 
-Last modified: 2026-04-14 17:03:23
+Last modified: 2026-04-14 17:08:33
 Sign: JN
 
 @author: cfos
@@ -55,8 +55,15 @@ def get_trim_names(wildcards):
     This function:
       1. Returns the correct input and output trimmed file names for fastp.
     """
-    inFile = INPUT_TABLE.loc[(wildcards.sample), ["fq1", "fq2"]].dropna()
-    return "--in1 " + inFile[0] + " --in2 " + inFile[1] + " --out1 " + os.path.join(RESULT_DIR, wildcards.sample, "fastp", wildcards.sample + "_trimmed_R1.fq.gz") + " --out2 " + os.path.join(RESULT_DIR, wildcards.sample, "fastp", wildcards.sample + "_trimmed_R2.fq.gz")
+    #inFile = INPUT_TABLE.loc[(wildcards.sample), ["fq1", "fq2"]].dropna()
+    #return "--in1 " + inFile[0] + " --in2 " + inFile[1] + " --out1 " + os.path.join(RESULT_DIR, wildcards.sample, "fastp", wildcards.sample + "_trimmed_R1.fq.gz") + " --out2 " + os.path.join(RESULT_DIR, wildcards.sample, "fastp", wildcards.sample + "_trimmed_R2.fq.gz")
+    inFile = INPUT_TABLE.loc[wildcards.sample, ["fq1", "fq2"]].dropna()
+    return (
+        "--in1 " + inFile["fq1"] +
+        " --in2 " + inFile["fq2"] +
+        " --out1 " + os.path.join(RESULT_DIR, wildcards.sample, "fastp", wildcards.sample + "_trimmed_R1.fq.gz") +
+        " --out2 " + os.path.join(RESULT_DIR, wildcards.sample, "fastp", wildcards.sample + "_trimmed_R2.fq.gz")
+    )
 
 def get_fastq(wildcards):
     """This function returns the forward and reverse fastq files for samples"""
