@@ -3,7 +3,7 @@
 """
 Created on Wed Jul 21 15:43:06 2021
 
-Last modified: 2026-04-15 09:25:35
+Last modified: 2026-04-15 11:22:30
 Sign: JN
 
 @author: cfos
@@ -162,7 +162,8 @@ rule fastp:
         html = os.path.join(RESULT_DIR, "{sample}/fastp/{sample}_fastp.html"),
         json = os.path.join(RESULT_DIR, "{sample}/fastp/{sample}_fastp.json")
     message:
-        "trimming {wildcards.sample} reads"
+        "trimming {wildcards.sample} reads with fastp"
+    shadow: "minimal"
     threads: 4
     log:
         os.path.join(RESULT_DIR, "{sample}/fastp/{sample}.log.txt")
@@ -181,6 +182,12 @@ rule fastp:
         cpus = 4
     shell:
         """
+        set -euo pipefail
+        tmp_fq1="{output.fq1}.tmp"
+        tmp_fq2="{output.fq2}.tmp"
+        tmp_html="{output.html}.tmp"
+        tmp_json="{output.json}.tmp"
+        trap 'rm -f "$tmp_fq1" "$tmp_fq2" "$tmp_html" "$tmp_json"' EXIT
         fastp --thread {threads} \
         --detect_adapter_for_pe \
         --cut_front \
@@ -190,10 +197,16 @@ rule fastp:
         --unqualified_percent_limit {params.unqualified_percent_limit} \
         --correction \
         --length_required 50 \
-        --html {output.html} \
-        --json {output.json} \
-        {params.in_and_out_files} \
+        --html "$tmp_html" \
+        --json "$tmp_json" \
+        --in1 {input[0]} --in2 {input[1]} \
+        --out1 "$tmp_fq1" --out2 "$tmp_fq2" \
         2>{log}
+        mv -f "$tmp_fq1" "{output.fq1}"
+        mv -f "$tmp_fq2" "{output.fq2}"
+        mv -f "$tmp_html" "{output.html}"
+        mv -f "$tmp_json" "{output.json}"
+        trap - EXIT
         """
 
 rule bwa_index:
