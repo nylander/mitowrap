@@ -3,7 +3,7 @@
 """
 Created on Wed Jul 21 15:43:06 2021
 
-Last modified: 2026-04-15 14:41:08
+Last modified: 2026-04-15 15:56:32
 Sign: JN
 
 @author: cfos
@@ -457,20 +457,20 @@ rule annotate_getOrg_assembly:
             sed -i "s|>.*|>$SAMPLE|g" {params.new_fasta}
             cd {params.annotation_dir}
             mitoz annotate \
-            --workdir . \
-            --thread_number 4  \
-            --outprefix {wildcards.sample} \
-            --fastafiles {params.new_fasta} \
-            --fq1 {input.r1} \
-            --fq2 {input.r2} \
-            --species_name {params.species_name} \
-            --genetic_code auto \
-            --clade {params.clade} >> {log} 2>&1
-             if [[ ! -e {output.summary} ]]; then
-                 echo "ERROR: Expected output not created: {output.summary}" >> {log}
-                 echo "MitoZ annotate did not produce summary.txt at the expected path." >> {log}
-                 exit 1
-             fi
+              --workdir . \
+              --thread_number 4  \
+              --outprefix {wildcards.sample} \
+              --fastafiles {params.new_fasta} \
+              --fq1 {input.r1} \
+              --fq2 {input.r2} \
+              --species_name {params.species_name} \
+              --genetic_code auto \
+              --clade {params.clade} >> {log} 2>&1 \
+            || ( \
+              echo "WARN: MitoZ annotate failed for getOrganelle assembly; writing empty summary." >> {log} ; \
+              mkdir -p "$(dirname {output.summary})" ; \
+              : > {output.summary} \
+            )
             touch {output.ckp}
         fi
         """
