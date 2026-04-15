@@ -3,7 +3,7 @@
 """
 Created on Wed Jul 21 15:43:06 2021
 
-Last modified: 2026-04-15 11:22:30
+Last modified: 2026-04-15 13:34:56
 Sign: JN
 
 @author: cfos
@@ -23,9 +23,9 @@ import glob
 from Bio import SeqIO
 import subprocess
 
-#################
+##################
 # Custom functions
-#################
+##################
 
 def find_input_data(READSDIR, data_type, SUFFIX):
     reads = glob.glob(os.path.join(READSDIR, '*'+SUFFIX))
@@ -55,8 +55,6 @@ def get_trim_names(wildcards):
     This function:
       1. Returns the correct input and output trimmed file names for fastp.
     """
-    #inFile = INPUT_TABLE.loc[(wildcards.sample), ["fq1", "fq2"]].dropna()
-    #return "--in1 " + inFile[0] + " --in2 " + inFile[1] + " --out1 " + os.path.join(RESULT_DIR, wildcards.sample, "fastp", wildcards.sample + "_trimmed_R1.fq.gz") + " --out2 " + os.path.join(RESULT_DIR, wildcards.sample, "fastp", wildcards.sample + "_trimmed_R2.fq.gz")
     inFile = INPUT_TABLE.loc[wildcards.sample, ["fq1", "fq2"]].dropna()
     return (
         "--in1 " + inFile["fq1"] +
@@ -69,9 +67,9 @@ def get_fastq(wildcards):
     """This function returns the forward and reverse fastq files for samples"""
     return INPUT_TABLE.loc[(wildcards.sample), ["fq1", "fq2"]].dropna()
 
-###############
+################
 # Configuration
-###############
+################
 
 configfile: "config.yaml"
 
@@ -88,17 +86,19 @@ onstart:
 \033[0m
 ----------------------------------------------
 
+Workflow written by Charles Foster
+
 """
     print(header)
     print("~~~ CONFIGURATION ~~~")
     for item in config:
         print(item+": "+str(config[item]))
     print("\n")
+
 main_dir = os.path.abspath(os.path.dirname("config.yaml"))
 REFERENCE = config["reference"]
 READSDIR = config["reads_dir"]
 RESULT_DIR = config["outdir"]
-
 if not os.path.exists(RESULT_DIR):
     os.makedirs(RESULT_DIR)
 SUFFIX = config["suffix"]
@@ -111,9 +111,6 @@ MAIN_SAMPLES = MAIN_TABLE.index.get_level_values('sample').unique().tolist()
 INPUT_TABLE = find_input_data(READSDIR, "all", SUFFIX)
 TODAY = date.today().strftime("%Y-%m-%d")
 
-#if ISOLATES != False:
-#    MAIN_SAMPLES = [i for i in MAIN_SAMPLES if any(b in i for b in ISOLATES)]
-
 config['analysis_samples'] = '; '.join(MAIN_SAMPLES)
 
 if config['using_conda']:
@@ -123,9 +120,9 @@ else:
     using_conda = "False"
     os.system('echo "False" > {}'.format(os.path.join(main_dir, ".using_conda")))
 
-################
+###################################################
 # Optional removal of trimmed reads (to save space)
-################
+###################################################
 
 if KEEP_READS == False:
     onsuccess:
@@ -133,9 +130,9 @@ if KEEP_READS == False:
         dead_reads = glob.glob(RESULT_DIR + '/**/*trimmed*.gz', recursive=True)
         [os.remove(x) for x in dead_reads]
 
-################
+##################
 # Desired outputs
-################
+##################
 
 rule final_qc:
     input:
@@ -149,20 +146,20 @@ rule final_qc:
         with open(os.path.join(RESULT_DIR,"config.yaml"), 'w') as outfile:
             yaml.dump(config, outfile, default_flow_style=False)
 
-########################
+########
 # Rules
-########################
+########
 
 rule fastp:
     input:
-        get_fastq,
+        get_fastq
     output:
         fq1  = os.path.join(RESULT_DIR, "{sample}/fastp/{sample}_trimmed_R1.fq.gz"),
         fq2  = os.path.join(RESULT_DIR, "{sample}/fastp/{sample}_trimmed_R2.fq.gz"),
         html = os.path.join(RESULT_DIR, "{sample}/fastp/{sample}_fastp.html"),
         json = os.path.join(RESULT_DIR, "{sample}/fastp/{sample}_fastp.json")
     message:
-        "trimming {wildcards.sample} reads with fastp"
+        "Trimming {wildcards.sample} reads with fastp"
     shadow: "minimal"
     threads: 4
     log:
@@ -214,6 +211,8 @@ rule bwa_index:
         reference = REFERENCE
     output:
         index = REFERENCE+".bwt"
+    message:
+        "Indexing {input.reference}"
     threads: 1
     resources:
         cpus = 1
@@ -234,7 +233,7 @@ rule bwa_map:
     output:
         sam = temp(os.path.join(RESULT_DIR, "{sample}/{sample}.sam"))
     message:
-        "mapping {wildcards.sample} reads to reference"
+        "Mapping {wildcards.sample} reads to reference"
     threads: 4
     log:
         os.path.join(RESULT_DIR, "{sample}/{sample}.bwa.log")
@@ -266,7 +265,7 @@ rule samtools_fastq:
         r2_unmapped = os.path.join(RESULT_DIR, "{sample}/{sample}_unmapped_R2.fq.gz"),
         singletons_unmapped = os.path.join(RESULT_DIR, "{sample}/{sample}_unmapped_singletons.fq.gz")
     message:
-        "extracting reads for {wildcards.sample}"
+        "Extracting reads for {wildcards.sample}"
     threads: 4
     log:
         os.path.join(RESULT_DIR, "{sample}/{sample}.samtools.log")
@@ -291,6 +290,8 @@ rule samtools_fastq:
 rule add_animal_mt_db:
     output:
         db_added = os.path.join(main_dir, ".animal_db_added")
+    message:
+        "Adding animal_mt db for getorganelle"
     threads: 1
     wildcard_constraints:
         sample = "(?!NC)(?!NEG).*"
@@ -313,11 +314,13 @@ rule get_organelle_assembly:
         r2 = os.path.join(RESULT_DIR, "{sample}/{sample}_mito_R2.fq.gz")
     output:
         ckp = os.path.join(RESULT_DIR, "{sample}/assembly/{sample}.getOrgComplete.txt")
+    message:
+        "Get organelle from reads"
     params:
         sample = "{sample}",
         outdir = os.path.join(RESULT_DIR, "{sample}/assembly")
     message:
-        "assembling {wildcards.sample} using getOrganelle"
+        "Assembling {wildcards.sample} using getOrganelle"
     threads: 8
     log:
         os.path.join(RESULT_DIR,"{sample}/{sample}.getOrg.log")
@@ -344,6 +347,8 @@ rule get_etetoolkit_data:
         using_conda = os.path.join(main_dir, ".using_conda")
     output:
         ete_data = os.path.join(main_dir, ".ete_data_added")
+    message:
+        "Get ete3 toolkit data"
     container:
         "docker://guanliangmeng/mitoz:3.4"
     message:
@@ -362,6 +367,8 @@ rule mitoz_assembly:
         ckp = os.path.join(RESULT_DIR, "{sample}/assembly/{sample}.mitozComplete.txt"),
         complete_file = os.path.join(RESULT_DIR, "{sample}/mitoz/{sample}.result/{sample}.{sample}.megahit.mitogenome.fa.result/summary.txt"),
         mitoz_assembly = os.path.join(RESULT_DIR, "{sample}/mitoz/{sample}.result/{sample}.megahit.result/{sample}.megahit.mitogenome.fa")
+    message:
+        "Assembling {wildcards.sample} using MitoZ"
     params:
         sample = "{sample}",
         clade = config["clade"],
@@ -370,8 +377,6 @@ rule mitoz_assembly:
         workdir = os.path.join(RESULT_DIR, "{sample}","mitoz"),
         touchdir1 = os.path.join(RESULT_DIR, "{sample}/mitoz/{sample}.result/{sample}.{sample}.megahit.result/"),
         touchdir2 = os.path.join(RESULT_DIR, "{sample}/mitoz/{sample}.result/{sample}.{sample}.megahit.mitogenome.fa.result/")
-    message:
-        "assembling {wildcards.sample} using MitoZ"
     threads: 8
     log:
         os.path.join(RESULT_DIR, "{sample}/{sample}.mitoz.log")
@@ -414,14 +419,14 @@ rule annotate_getOrg_assembly:
     output:
         ckp = os.path.join(RESULT_DIR, "{sample}/assembly/{sample}.annotateGetOrgComplete.txt"),
         summary = os.path.join(RESULT_DIR, "{sample}", "getOrg_annotation", "{sample}.{sample}.assembly.fa.result", "summary.txt")
+    message:
+        "Annotating getOrganelle assembly for {wildcards.sample}"
     params:
         clade = config["clade"],
         species_name = config["species_name"],
         assembly_dir = os.path.join(RESULT_DIR, "{sample}", "assembly"),
         annotation_dir = os.path.join(RESULT_DIR, "{sample}", "getOrg_annotation"),
         new_fasta = os.path.join(RESULT_DIR, "{sample}", "getOrg_annotation", "{sample}.assembly.fa")
-    message:
-        "annotating getOrganelle assembly for {wildcards.sample}"
     threads: 4
     log:
         os.path.join(RESULT_DIR, "{sample}/{sample}.mitozAnnotateGetOrg.log")
@@ -472,6 +477,8 @@ rule sample_qc:
     params:
         joint_summary = os.path.join(RESULT_DIR, "{sample}/assembly_summaries.csv"),
         sample = "{sample}"
+    message:
+        "Run QC for {wildcards.sample}"
     output:
         report = temp(os.path.join(RESULT_DIR, "{sample}.qc_results.csv"))
     log:
@@ -535,7 +542,6 @@ rule sample_qc:
                 out = f"{sample},mitoz,{circular},{total_pcg},{total_trna},{total_rrna},{total_genes}"
                 print(out, file=o)
 
-        # parse the fasta files
         fastas = [os.path.join(RESULT_DIR, params.sample, "assembly", x) for x in os.listdir(os.path.join(RESULT_DIR, params.sample, 'assembly')) if x.endswith(".fasta")]
         fa_list = []
         if len(fastas) > 0:
@@ -572,7 +578,6 @@ rule sample_qc:
             'contig':None,
             'length':0})
 
-        # join everything
         result1 = pd.DataFrame.from_dict(fa_list)
         result2 = pd.read_csv(params.joint_summary)
         result = result1.merge(result2, on=['sample_name', 'assembly_program'], how='left')
