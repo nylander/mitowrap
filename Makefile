@@ -1,5 +1,5 @@
 # Makefile for mitowrap
-# Last modified: 2026-04-15 11:32:55
+# Last modified: 2026-04-15 11:46:28
 # Sign: JN
 
 .PHONY: all run debug dryrun report slurm-run dardel-run clean distclean
@@ -25,7 +25,7 @@ dardel-run:
 	snakemake --profile dardel
 
 clean:
-	rm -rf .snakemake mitowrap-report.html .animal_db_added .animal_db.log ete_data_added mitoz.log .using_conda
+	rm -rf .snakemake mitowrap-report.html .animal_db_added .animal_db.log .ete_data_added mitoz.log .using_conda
 
 distclean:
-	rm -rf results .snakemake mitowrap-report.html .animal_db_added .animal_db.log ete_data_added mitoz.log .using_conda
+	rm -rf results .snakemake mitowrap-report.html .animal_db_added .animal_db.log .ete_data_added mitoz.log .using_conda
