@@ -3,4 +3,4 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - getorganelle==1.7.6.1
+  - getorganelle
