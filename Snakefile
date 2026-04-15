@@ -3,7 +3,7 @@
 """
 Created on Wed Jul 21 15:43:06 2021
 
-Last modified: 2026-04-15 13:50:59
+Last modified: 2026-04-15 14:41:08
 Sign: JN
 
 @author: cfos
@@ -455,8 +455,9 @@ rule annotate_getOrg_assembly:
             cp $FASTA {params.new_fasta}
             SAMPLE={wildcards.sample}
             sed -i "s|>.*|>$SAMPLE|g" {params.new_fasta}
+            cd {params.annotation_dir}
             mitoz annotate \
-            --workdir {params.annotation_dir} \
+            --workdir . \
             --thread_number 4  \
             --outprefix {wildcards.sample} \
             --fastafiles {params.new_fasta} \
@@ -465,6 +466,11 @@ rule annotate_getOrg_assembly:
             --species_name {params.species_name} \
             --genetic_code auto \
             --clade {params.clade} >> {log} 2>&1
+             if [[ ! -e {output.summary} ]]; then
+                 echo "ERROR: Expected output not created: {output.summary}" >> {log}
+                 echo "MitoZ annotate did not produce summary.txt at the expected path." >> {log}
+                 exit 1
+             fi
             touch {output.ckp}
         fi
         """
