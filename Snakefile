@@ -3,7 +3,7 @@
 """
 Created on Wed Jul 21 15:43:06 2021
 
-Last modified: 2026-04-15 13:34:56
+Last modified: 2026-04-15 13:50:59
 Sign: JN
 
 @author: cfos
@@ -461,7 +461,7 @@ rule annotate_getOrg_assembly:
             --outprefix {wildcards.sample} \
             --fastafiles {params.new_fasta} \
             --fq1 {input.r1} \
-            --fq2 {input.r1} \
+            --fq2 {input.r2} \
             --species_name {params.species_name} \
             --genetic_code auto \
             --clade {params.clade} >> {log} 2>&1
