@@ -3,7 +3,7 @@
 """
 Created on Wed Jul 21 15:43:06 2021
 
-Last modified: 2026-04-14 17:20:06
+Last modified: 2026-04-15 09:25:35
 Sign: JN
 
 @author: cfos
@@ -122,9 +122,6 @@ if config['using_conda']:
 else:
     using_conda = "False"
     os.system('echo "False" > {}'.format(os.path.join(main_dir, ".using_conda")))
-
-if os.path.exists(os.path.join(main_dir, ".ete_data_added")):
-    os.remove(os.path.join(main_dir, ".ete_data_added"))
 
 ################
 # Optional removal of trimmed reads (to save space)
